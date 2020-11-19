@@ -7,6 +7,7 @@ LDFLAGS="-w -s -X ${IMPORT_VERSION}.Version=${VERSION} -X ${IMPORT_VERSION}.Date
 
 DOCKER_SRC=./build/docker.local
 DOCKER_COMPOSE_CMD=docker-compose -f ${DOCKER_SRC}/docker-compose.yml
+DOCKER_COMPOSE_EXT_SERVICES=pg
 
 build: build-local
 	${DOCKER_COMPOSE_CMD} build --force-rm
@@ -16,6 +17,9 @@ build-local:
 		-ldflags ${LDFLAGS} \
 		-o ./bin/payment ./cmd/payment/main.go
 
+
+run-local: stop
+	${DOCKER_COMPOSE_CMD} up -d ${DOCKER_COMPOSE_EXT_SERVICES}
 
 run: stop-soft
 	${DOCKER_COMPOSE_CMD} up -d

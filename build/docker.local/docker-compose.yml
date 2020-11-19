@@ -13,10 +13,12 @@ services:
     restart: always
     env_file:
       - ${PG_PAYMENT_ENV}
+      - ${SERVICE_ENV}
+      - ${LOG_ENV}
+      - ${API_ENV}
     depends_on:
       - pg
 
-  # Postgres
   # Postgresql
   pg:
     container_name: payment_system_pg
