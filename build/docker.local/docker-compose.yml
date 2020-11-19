@@ -1,0 +1,52 @@
+version: "3.3"
+
+services:
+
+  # Payment
+  payment:
+    container_name: payment_system_payment
+    build:
+      context: ../..
+      dockerfile: build/docker.local/local.service.Dockerfile
+      args:
+        SERVICE: payment
+    restart: always
+    env_file:
+      - ${PG_PAYMENT_ENV}
+    depends_on:
+      - pg
+
+  # Postgres
+  # Postgresql
+  pg:
+    container_name: payment_system_pg
+    image: postgres:9.6.8
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=qwerty
+      - POSTGRES_MULTIPLE_DATABASES=payment
+    volumes:
+      - type: volume
+        source: payment_system_pg_volume
+        target: /var/lib/postgresql/data
+        volume:
+          nocopy: true
+      - type: bind
+        source: ./postgres_initdb
+        target: /docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: pg_isready -U postgres
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  default:
+    external:
+      name: payment_system_network
+
+volumes:
+  payment_system_pg_volume:

@@ -1,0 +1,30 @@
+run:
+  concurrency: 4
+  timeout: 10m
+
+linters:
+  enable-all: true
+  disable:
+    # Useless linters
+    - wsl
+    - dupl
+    - godox
+    - interfacer
+    - whitespace
+    # Warnings of these linter have to be fixed
+    - gocognit
+    - funlen
+    - gocyclo
+    - gosec
+
+issues:
+  exclude:
+    # Ignore underscores in package names and in test functions
+    - "use(?: an)? underscores? in package names?"
+    - "use underscores in Go names; (?:func|type) (?:T|t)est"
+    # Ignore global regexps
+    - "`\\w*?regex\\w*?` is a global variable"
+
+  # Show all issues
+  max-issues-per-linter: 0
+  max-same-issues: 0
