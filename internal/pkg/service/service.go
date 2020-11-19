@@ -79,10 +79,10 @@ func (s *Service) Start() error {
 	}
 	routers := s.GetRouters()
 	routers.Use(RequestScope)
-	loggedRouter := loggingHandler(s.log, routers)
+	loggerHandler := s.getLoggerHander(routers)
 
 	server := &http.Server{
-		Handler: loggedRouter,
+		Handler: loggerHandler,
 		Addr:    s.config.Host + ":" + strconv.Itoa(s.config.Port),
 	}
 	s.log.Infow("listen", "host", s.config.Host, "port", s.config.Port)
@@ -105,6 +105,14 @@ func (s *Service) Start() error {
 		return err
 	}
 	return nil
+}
+
+func (s *Service) getLoggerHander(routers *mux.Router) http.Handler {
+	loggerHandler := s.log.Desugar().WithOptions(
+		zap.WithCaller(false),
+	).Sugar()
+	loggedRouter := loggingHandler(loggerHandler, routers)
+	return loggedRouter
 }
 
 func (s *Service) done() {
