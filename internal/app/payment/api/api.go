@@ -3,9 +3,14 @@ package api
 import (
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
+	"net/http"
 	"net/http/pprof"
 	"test-payment-system/internal/app/payment/database"
+	"test-payment-system/internal/pkg/config"
+	"test-payment-system/internal/pkg/service"
+	"test-payment-system/pkg/version"
 )
+const PathAPIPrefix = "/api/v1/payment"
 
 type API struct {
 	log *zap.SugaredLogger
@@ -30,7 +35,13 @@ func (a *API) AddDebugHandler(r *mux.Router, prefix string) {
 }
 
 func (a *API) GetRoutes(r *mux.Router) *mux.Router {
-	//subrouter := r.PathPrefix("/api/v1/payment").Subrouter()
+	if config.CurrentMode == config.ModeDevelopment {
+		a.AddDebugHandler(r, PathAPIPrefix)
+	}
+	routerInternal := r.PathPrefix("/api/v1/internal/payment").Subrouter()
+	routerInternal.HandleFunc("/version", service.ToJSONResponse(version.GetVersionHandler)).
+		Methods(http.MethodGet, http.MethodOptions)
+	//subrouter := r.PathPrefix(PathAPIPrefix).Subrouter()
 	return r
 }
 
