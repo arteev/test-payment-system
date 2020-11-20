@@ -6,10 +6,12 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"test-payment-system/internal/app/payment/database"
+	"test-payment-system/internal/app/payment/dto"
 	"test-payment-system/internal/pkg/config"
 	"test-payment-system/internal/pkg/service"
 	"test-payment-system/pkg/version"
 )
+
 const PathAPIPrefix = "/api/v1/payment"
 
 type API struct {
@@ -41,7 +43,11 @@ func (a *API) GetRoutes(r *mux.Router) *mux.Router {
 	routerInternal := r.PathPrefix("/api/v1/internal/payment").Subrouter()
 	routerInternal.HandleFunc("/version", service.ToJSONResponse(version.GetVersionHandler)).
 		Methods(http.MethodGet, http.MethodOptions)
-	//subrouter := r.PathPrefix(PathAPIPrefix).Subrouter()
+
+	subrouter := r.PathPrefix(PathAPIPrefix).Subrouter()
+	subrouter.HandleFunc("/wallet", service.ToJSONDataObjectRequestResponse(
+		a.NewWallet, &dto.NewWalletRequestMeta{},
+	)).Methods(http.MethodPost, http.MethodOptions)
 	return r
 }
 
