@@ -96,3 +96,35 @@ func (a *API) Deposit(ctx context.Context, in service.DataObject) (response inte
 	}
 	return dto.NewDepositResponse(*deposit), nil
 }
+
+// Transfer transfer money
+// @Summary transfer money
+// @Description Transferring money between wallets
+// @Tags Payment System
+// @Accept json
+// @Produce json
+// @Param Payload body dto.TransferRequest true "Request Payload"
+// @Success 200 {object} service.Response{data=dto.WalletTransfer} "Success operation"
+// @Router /api/v1/payment/wallet/deposit [post]
+//
+func (a *API) Transfer(ctx context.Context, in service.DataObject) (response interface{}, responseErr error) {
+	request := in.(*dto.TransferRequest)
+	log := apilog.LogStart(ctx, a.log, "wallet_from", request.WalletFrom,
+		"wallet_to", request.WalletTo, "amount", request.Amount)
+	defer func() { apilog.LogFinish(ctx, log, response, responseErr) }()
+	walletFrom, err := a.db.GetWallet(ctx, request.WalletFrom)
+	if err != nil {
+		return nil, err
+	}
+	walletTo, err := a.db.GetWallet(ctx, request.WalletTo)
+	if err != nil {
+		return nil, err
+	}
+
+	transfer, err := a.db.Transfer(ctx, walletFrom.ID, walletTo.ID, request.Amount)
+	if err != nil {
+		return nil, err
+	}
+
+	return dto.NewTransferResponse(*transfer), nil
+}

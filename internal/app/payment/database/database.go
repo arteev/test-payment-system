@@ -14,4 +14,5 @@ type Database interface {
 	NewWallet(ctx context.Context, name string) (*model.Wallet, error)
 	GetWallet(ctx context.Context, id uint) (*model.Wallet, error)
 	Deposit(ctx context.Context, walletID uint, amount float64) (*model.WalletDeposit, error)
+	Transfer(ctx context.Context, walletFrom, walletTo uint, amount float64) (*model.WalletTransfer, error)
 }

@@ -35,3 +35,12 @@ type WalletOperJournal struct {
 	Amount   float64       `db:"amount"`
 	Unit     Unit          `db:"unit"`
 }
+
+// WalletTransfer wallet transfer money model
+type WalletTransfer struct {
+	ID         uint      `db:"id"`
+	WalletFrom uint      `db:"wallet_from"`
+	WalletTo   uint      `db:"wallet_to"`
+	Amount     float64   `db:"amount"`
+	CreatedAt  time.Time `db:"created_at"`
+}

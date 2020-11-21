@@ -86,3 +86,55 @@ func NewDepositResponse(deposit model.WalletDeposit) *DepositResponse {
 		Amount:    deposit.Amount,
 	}
 }
+
+// TransferRequestMeta meta type for struct of transfer money request
+type TransferRequestMeta struct{}
+
+// New return ptr for struct of new wallet request
+func (m *TransferRequestMeta) New() service.DataObject {
+	return &TransferRequest{}
+}
+
+// TransferRequest dto return with a transfer money
+type TransferRequest struct {
+	WalletFrom uint    `json:"wallet_from"`
+	WalletTo   uint    `json:"wallet_to"`
+	Amount     float64 `json:"amount"`
+}
+
+// Validate check if necessary fields are not empty
+func (r *TransferRequest) Validate() error {
+	if r.Amount <= 0 {
+		return fmt.Errorf("invalid parameter: amount of the deposit must be positive")
+	}
+	if r.WalletFrom <= 0 {
+		return fmt.Errorf("invalid parameter: wallet_from required")
+	}
+	if r.WalletTo <= 0 {
+		return fmt.Errorf("invalid parameter: wallet_to required")
+	}
+	if r.WalletFrom == r.WalletTo {
+		return fmt.Errorf("source wallet must not match destination wallet")
+	}
+	return nil
+}
+
+// TransferResponse dto return with a new transfer money
+type TransferResponse struct {
+	ID         uint    `json:"id"`
+	WalletFrom uint    `json:"wallet_from"`
+	WalletTo   uint    `json:"wallet_from"`
+	Amount     float64 `json:"amount"`
+	CreatedAt  int64   `json:"created_at"`
+}
+
+// TransferResponse create and returns TransferResponse from transfer money model
+func NewTransferResponse(transfer model.WalletTransfer) *TransferResponse {
+	return &TransferResponse{
+		ID:         transfer.ID,
+		WalletFrom: transfer.WalletFrom,
+		WalletTo:   transfer.WalletTo,
+		Amount:     transfer.Amount,
+		CreatedAt:  transfer.CreatedAt.Unix(),
+	}
+}

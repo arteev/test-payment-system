@@ -84,6 +84,15 @@ func (db *DB) insertWalletOperJournal(ctx context.Context, tx *Transaction, jour
 	return id, nil
 }
 
+func (db *DB) insertJournalLink(ctx context.Context, tx *Transaction, in, out uint) (uint, error) {
+	var id uint
+	err := tx.GetContext(ctx, &id, sqlInsertWalletOperJournalLink, in, out)
+	if err != nil {
+		return 0, processPgError(err, "wallet_oper_journal_links")
+	}
+	return id, nil
+}
+
 func (db *DB) insertUnitLink(ctx context.Context, tx *Transaction, link model.UnitLink) (uint, error) {
 	var id uint
 	err := tx.GetContext(ctx, &id, sqlInsertUnitLink, link.In, link.Out, link.InID, link.OutID)
@@ -146,8 +155,82 @@ func (db *DB) Deposit(ctx context.Context, walletID uint, amount float64) (_ *mo
 	}
 
 	if err = db.calculateAndUpdateBalanceWallet(ctx, tx, walletID); err != nil {
-		return nil, err
+		return nil, processPgError(err, "")
 	}
 
 	return deposit, nil
+}
+
+func (db *DB) Transfer(ctx context.Context, walletFrom, walletTo uint,
+	amount float64) (_ *model.WalletTransfer, returnErr error) {
+	transfer := &model.WalletTransfer{}
+	tx, err := db.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if returnErr != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	err = tx.GetContext(ctx, transfer, sqlTransfer, walletFrom, walletTo, amount)
+	if err != nil {
+		return nil, processPgError(err, "deposit wallet")
+	}
+
+	journalFromID, err := db.insertWalletOperJournal(ctx, tx, model.WalletOperJournal{
+		WalletID: walletFrom,
+		OperSign: model.OperationSignTransfer,
+		Amount:   amount,
+		Unit:     model.UnitNameTransfer,
+	})
+	if err != nil {
+		return nil, processPgError(err, "")
+	}
+
+	journalToID, err := db.insertWalletOperJournal(ctx, tx, model.WalletOperJournal{
+		WalletID: walletTo,
+		OperSign: model.OperationSignIncome,
+		Amount:   amount,
+		Unit:     model.UnitNameTransfer,
+	})
+	if err != nil {
+		return nil, processPgError(err, "")
+	}
+
+	_, err = db.insertJournalLink(ctx, tx, journalFromID, journalToID)
+	if err != nil {
+		return nil, processPgError(err, "")
+	}
+
+	_, err = db.insertUnitLink(ctx, tx, model.UnitLink{
+		In:    model.UnitNameTransfer,
+		Out:   model.UnitNameWalletOperJournal,
+		InID:  transfer.ID,
+		OutID: journalFromID,
+	})
+	if err != nil {
+		return nil, processPgError(err, "")
+	}
+
+	_, err = db.insertUnitLink(ctx, tx, model.UnitLink{
+		In:    model.UnitNameTransfer,
+		Out:   model.UnitNameWalletOperJournal,
+		InID:  transfer.ID,
+		OutID: journalToID,
+	})
+	if err != nil {
+		return nil, processPgError(err, "")
+	}
+
+	if err = db.calculateAndUpdateBalanceWallet(ctx, tx, walletFrom); err != nil {
+		return nil, processPgError(err, "")
+	}
+	if err = db.calculateAndUpdateBalanceWallet(ctx, tx, walletTo); err != nil {
+		return nil, processPgError(err, "")
+	}
+	return transfer, nil
 }

@@ -7,7 +7,7 @@ const (
 	sqlDeposit                 = `insert into wallet_deposits(wallet,amount) values($1,$2) returning *`
 	sqlInsertWalletOperJournal = `insert into wallet_oper_journal(wallet,oper_sign,amount,unit) 
 values($1,$2,$3,$4) returning id`
-	sqlInsertUnitLink = `insert into wallet_unit_links(in_unit,out_unit,in_id,out_id) values($1,$2,$3,$4) returning id`
+	sqlInsertUnitLink      = `insert into wallet_unit_links(in_unit,out_unit,in_id,out_id) values($1,$2,$3,$4) returning id`
 	sqlUpdateBalanceWallet = `update wallets w
 set 
 	updated_at = now(),
@@ -18,4 +18,6 @@ set
     from wallet_oper_journal j
     where j.wallet = $1)
 where w.id = $1`
+	sqlTransfer                    = `insert into wallet_transfer(wallet_from,wallet_to,amount) values($1,$2,$3) returning *`
+	sqlInsertWalletOperJournalLink = `insert into  wallet_oper_journal_links(in_id,out_id) values ($1,$2) returning id`
 )
