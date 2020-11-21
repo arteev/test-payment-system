@@ -70,3 +70,29 @@ func (a *API) GetWallet(ctx context.Context, r *http.Request) (response interfac
 
 	return dto.NewWalletResponse(*wallet), nil
 }
+
+// Deposit deposit to wallet
+// @Summary Deposit to wallet
+// @Description Transfer funds to the wallet, return the deposit record
+// @Tags Payment System
+// @Accept json
+// @Produce json
+// @Param Payload body dto.DepositRequest true "Request Payload"
+// @Success 200 {object} service.Response{data=dto.DepositResponse} "Success operation"
+// @Router /api/v1/payment/wallet/deposit [post]
+//
+func (a *API) Deposit(ctx context.Context, in service.DataObject) (response interface{}, responseErr error) {
+	request := in.(*dto.DepositRequest)
+	log := apilog.LogStart(ctx, a.log, "wallet_id", request.WalletID,
+		"amount", request.Amount)
+	defer func() { apilog.LogFinish(ctx, log, response, responseErr) }()
+	wallet, err := a.db.GetWallet(ctx, request.WalletID)
+	if err != nil {
+		return nil, err
+	}
+	deposit, err := a.db.Deposit(ctx, wallet.ID, request.Amount)
+	if err != nil {
+		return nil, err
+	}
+	return dto.NewDepositResponse(*deposit), nil
+}

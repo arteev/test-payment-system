@@ -69,3 +69,14 @@ func (db *DB) GetWallet(ctx context.Context, id uint) (*model.Wallet, error) {
 	}
 	return wallet, nil
 }
+
+func (db *DB) Deposit(ctx context.Context, walletID uint, amount float64) (*model.WalletDeposit, error) {
+	//FIXME: to fill journals
+	deposit := &model.WalletDeposit{}
+	connection := db.PgDatabase.Connection
+	err := connection.GetContext(ctx, deposit, sqlDeposit, walletID, amount)
+	if err != nil {
+		return nil, processPgError(err, "deposit wallet")
+	}
+	return deposit, nil
+}

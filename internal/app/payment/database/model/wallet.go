@@ -10,3 +10,11 @@ type Wallet struct {
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
 }
+
+// WalletDeposit wallet deposit model
+type WalletDeposit struct {
+	ID        uint      `db:"id"`
+	WalletID  uint      `db:"wallet"`
+	Amount    float64   `db:"amount"`
+	CreatedAt time.Time `db:"created_at"`
+}
