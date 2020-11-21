@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS wallets
 CREATE UNIQUE INDEX UNQ_WALLETS_NAME ON wallets (name);
 
 DROP TYPE IF EXISTS UNIT;
-CREATE TYPE UNIT AS ENUM ('deposit','transfer');
+CREATE TYPE UNIT AS ENUM ('deposit','transfer','wallet_oper_journal');
 
 
 CREATE TABLE IF NOT EXISTS wallet_deposits

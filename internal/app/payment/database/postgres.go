@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres" // comment
 	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
 	_ "github.com/jackc/pgx/v4/stdlib" // register pg driver
@@ -70,13 +71,83 @@ func (db *DB) GetWallet(ctx context.Context, id uint) (*model.Wallet, error) {
 	return wallet, nil
 }
 
-func (db *DB) Deposit(ctx context.Context, walletID uint, amount float64) (*model.WalletDeposit, error) {
-	//FIXME: to fill journals
+func (db *DB) insertWalletOperJournal(ctx context.Context, tx *Transaction, journal model.WalletOperJournal) (uint, error) {
+	var id uint
+	err := tx.GetContext(ctx, &id, sqlInsertWalletOperJournal,
+		journal.WalletID,
+		journal.OperSign,
+		journal.Amount,
+		journal.Unit)
+	if err != nil {
+		return 0, processPgError(err, "wallet_oper_journal")
+	}
+	return id, nil
+}
+
+func (db *DB) insertUnitLink(ctx context.Context, tx *Transaction, link model.UnitLink) (uint, error) {
+	var id uint
+	err := tx.GetContext(ctx, &id, sqlInsertUnitLink, link.In, link.Out, link.InID, link.OutID)
+	if err != nil {
+		return 0, processPgError(err, "wallet_unit_link")
+	}
+	return id, nil
+}
+
+func (db *DB) calculateAndUpdateBalanceWallet(ctx context.Context, tx *Transaction, walletID uint) error {
+	result, err := tx.ExecContext(ctx, sqlUpdateBalanceWallet, walletID)
+	if err != nil {
+		return err
+	}
+	if affected, err := result.RowsAffected(); err != nil {
+		return processPgError(err, "")
+	} else if affected == 0 {
+		return fmt.Errorf("%w: %s", ErrNotFound, "wallet")
+	}
+	return nil
+}
+
+func (db *DB) Deposit(ctx context.Context, walletID uint, amount float64) (_ *model.WalletDeposit, returnErr error) {
 	deposit := &model.WalletDeposit{}
-	connection := db.PgDatabase.Connection
-	err := connection.GetContext(ctx, deposit, sqlDeposit, walletID, amount)
+	tx, err := db.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if returnErr != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	err = tx.GetContext(ctx, deposit, sqlDeposit, walletID, amount)
 	if err != nil {
 		return nil, processPgError(err, "deposit wallet")
 	}
+
+	journalID, err := db.insertWalletOperJournal(ctx, tx, model.WalletOperJournal{
+		WalletID: walletID,
+		OperSign: model.OperationSignIncome,
+		Amount:   amount,
+		Unit:     model.UnitNameDeposit,
+	})
+	if err != nil {
+		return nil, processPgError(err, "")
+	}
+
+	_, err = db.insertUnitLink(ctx, tx, model.UnitLink{
+		In:    model.UnitNameDeposit,
+		Out:   model.UnitNameWalletOperJournal,
+		InID:  deposit.ID,
+		OutID: journalID,
+	})
+	if err != nil {
+		return nil, processPgError(err, "")
+	}
+
+	if err = db.calculateAndUpdateBalanceWallet(ctx, tx, walletID); err != nil {
+		return nil, err
+	}
+
 	return deposit, nil
 }
