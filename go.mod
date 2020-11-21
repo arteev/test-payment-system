@@ -6,9 +6,11 @@ require (
 	github.com/containerd/fifo v0.0.0-20201026212402-0724c46b320c // indirect
 	github.com/docker/docker v1.4.2-0.20200213202729-31a86c4ab209
 	github.com/docker/go-metrics v0.0.1 // indirect
+	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.13.0
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.4
+	github.com/jackc/pgconn v1.7.2
 	github.com/jackc/pgx/v4 v4.9.2
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/pkg/errors v0.9.1

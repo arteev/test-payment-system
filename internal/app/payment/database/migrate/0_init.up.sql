@@ -1,12 +1,12 @@
 CREATE TABLE IF NOT EXISTS wallets
 (
     id         SERIAL PRIMARY KEY,
-    name       VARCHAR(200)   NOT NULL,
-    balance    NUMERIC(18, 2) NOT NULL DEFAULT 0.0,
+    name       VARCHAR(200)   NOT NULL
+        CONSTRAINT check_wallet_name_too_short CHECK ( length(name) > 5 ),
+    balance    NUMERIC(18, 2) NOT NULL DEFAULT 0.0
+        CONSTRAINT check_balance_not_negative CHECK (balance >= 0.0),
     created_at timestamptz    NOT NULL DEFAULT now(),
-    updated_at timestamptz    NOT NULL DEFAULT now(),
-    CHECK (balance > 0.0),
-    CHECK ( length(name) > 5 )
+    updated_at timestamptz    NOT NULL DEFAULT now()
 );
 
 
@@ -57,11 +57,11 @@ CREATE UNIQUE INDEX UNQ_WALLETS_OPER_JOURNAL_LINKS ON wallet_oper_journal_links 
 
 CREATE TABLE IF NOT EXISTS wallet_unit_links
 (
-    id SERIAL PRIMARY KEY,
-    in_unit UNIT NOT NULL,
+    id       SERIAL PRIMARY KEY,
+    in_unit  UNIT NOT NULL,
     out_unit UNIT NOT NULL,
-    in_id INT NOT NULL,
-    out_id INT NOT NULL
+    in_id    INT  NOT NULL,
+    out_id   INT  NOT NULL
 );
 
 CREATE UNIQUE INDEX UNQ_WALLETS_UNIT_LINKS ON wallet_unit_links (in_unit, in_id, out_unit, out_id);

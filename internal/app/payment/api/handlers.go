@@ -2,6 +2,10 @@ package api
 
 import (
 	"context"
+	"fmt"
+	"github.com/gofrs/uuid"
+	"net/http"
+	"strconv"
 	"test-payment-system/internal/app/payment/dto"
 	"test-payment-system/internal/pkg/apilog"
 	"test-payment-system/internal/pkg/service"
@@ -14,7 +18,7 @@ import (
 // @Accept json
 // @Produce json
 // @Param Payload body dto.NewWalletRequest true "Request Payload"
-// @Success 200 {object} service.Response{data=dto.NewWalletResponse} "Success operation"
+// @Success 200 {object} service.Response{data=dto.WalletResponse} "Success operation"
 // @Router /api/v1/payment/wallet [post]
 //
 func (a *API) NewWallet(ctx context.Context, in service.DataObject) (response interface{}, responseErr error) {
@@ -22,12 +26,47 @@ func (a *API) NewWallet(ctx context.Context, in service.DataObject) (response in
 	log := apilog.LogStart(ctx, a.log, "wallet_name", request.Name)
 	defer func() { apilog.LogFinish(ctx, log, response, responseErr) }()
 
-	//TODO: implement
+	name := request.Name
+	if name == "" {
+		if uid, err := uuid.NewV1(); err != nil {
+			log.Error(err)
+			return nil, ErrSomethingWentWrong
+		} else {
+			name = uid.String()
+		}
+	}
+	wallet, err := a.db.NewWallet(ctx, request.Name)
+	if err != nil {
+		log.Error(err)
+		return nil, fmt.Errorf("%w: %v", ErrFailedCreatedWallet, err)
+	}
 
-	return dto.NewWalletResponse{
-		ID:        0,
-		Name:      request.Name,
-		CreatedAt: 0,
-		Balance:   0,
-	}, nil
+	return dto.NewWalletResponse(*wallet), nil
+}
+
+// GetWallet get wallet by id
+// @Summary Get wallet
+// @Description get wallet by id
+// @Tags Payment System
+// @Accept json
+// @Produce json
+// @Param id query int true "Wallet ID"
+// @Success 200 {object} service.Response{data=dto.WalletResponse} "Success operation"
+// @Router /api/v1/payment/wallet [get]
+//
+func (a *API) GetWallet(ctx context.Context, r *http.Request) (response interface{}, responseErr error) {
+	log := apilog.LogStart(ctx, a.log, apilog.ValuesFromRequest(r)...)
+	defer func() { apilog.LogFinish(ctx, log, response, responseErr) }()
+
+	id, err := strconv.Atoi(r.FormValue("id"))
+	if err != nil {
+		return nil, fmt.Errorf("%w: id", ErrInvalidParameter)
+	}
+
+	wallet, err := a.db.GetWallet(ctx, uint(id))
+	if err != nil {
+		return nil, err
+	}
+
+	return dto.NewWalletResponse(*wallet), nil
 }
