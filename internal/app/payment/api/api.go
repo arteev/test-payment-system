@@ -52,13 +52,16 @@ func (a *API) GetRoutes(r *mux.Router) *mux.Router {
 	subrouter.HandleFunc("/wallet", service.ToJSONResponse(a.GetWallet)).
 		Methods(http.MethodGet, http.MethodOptions)
 
-	subrouter.HandleFunc("/wallet/deposit", service.ToJSONDataObjectRequestResponse(
+	subrouter.HandleFunc("/deposit", service.ToJSONDataObjectRequestResponse(
 		a.Deposit, &dto.DepositRequestMeta{},
 	)).Methods(http.MethodPost, http.MethodOptions)
 
-	subrouter.HandleFunc("/wallet/transfer", service.ToJSONDataObjectRequestResponse(
+	subrouter.HandleFunc("/transfer", service.ToJSONDataObjectRequestResponse(
 		a.Transfer, &dto.TransferRequestMeta{},
 	)).Methods(http.MethodPost, http.MethodOptions)
+
+	subrouter.HandleFunc("/operations", a.Operations).
+		Methods(http.MethodGet, http.MethodOptions)
 
 	return r
 }

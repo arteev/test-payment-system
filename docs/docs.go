@@ -25,6 +25,52 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/payment/deposit": {
+            "post": {
+                "description": "Transferring money between wallets",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment System"
+                ],
+                "summary": "transfer money",
+                "parameters": [
+                    {
+                        "description": "Request Payload",
+                        "name": "Payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.TransferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success operation",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/service.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.TransferResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/payment/wallet": {
             "get": {
                 "description": "get wallet by id",
@@ -104,52 +150,6 @@ var doc = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/dto.WalletResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/payment/wallet/deposit": {
-            "post": {
-                "description": "Transferring money between wallets",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Payment System"
-                ],
-                "summary": "transfer money",
-                "parameters": [
-                    {
-                        "description": "Request Payload",
-                        "name": "Payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.TransferRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success operation",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/service.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/dto.TransferResponse"
                                         }
                                     }
                                 }

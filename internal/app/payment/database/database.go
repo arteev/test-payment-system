@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/jmoiron/sqlx"
 	"test-payment-system/internal/app/payment/database/model"
+	"time"
 )
 
 // Transaction alias of type sqlx.Tx
@@ -15,4 +16,6 @@ type Database interface {
 	GetWallet(ctx context.Context, id uint) (*model.Wallet, error)
 	Deposit(ctx context.Context, walletID uint, amount float64) (*model.WalletDeposit, error)
 	Transfer(ctx context.Context, walletFrom, walletTo uint, amount float64) (*model.WalletTransfer, error)
+	OperationWallet(ctx context.Context, walletID uint, operSign *model.OperationSign, timeFrom,
+		timeTo time.Time) ([]*model.Operation, error)
 }

@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres" // comment
@@ -12,6 +13,7 @@ import (
 	"test-payment-system/internal/app/payment/database/model"
 	"test-payment-system/internal/pkg/config"
 	"test-payment-system/pkg/database"
+	"time"
 )
 
 const defaultDriverSQLX = "pgx"
@@ -233,4 +235,35 @@ func (db *DB) Transfer(ctx context.Context, walletFrom, walletTo uint,
 		return nil, processPgError(err, "")
 	}
 	return transfer, nil
+}
+
+func (db *DB) OperationWallet(ctx context.Context, walletID uint, operSign *model.OperationSign, timeFrom,
+	timeTo time.Time) ([]*model.Operation, error) {
+	connection := db.PgDatabase.Connection
+	var timeFromArg, timeToArg *time.Time
+	if !timeFrom.IsZero() {
+		timeFromArg = &timeFrom
+	}
+	if !timeTo.IsZero() {
+		timeToArg = &timeTo
+	}
+	rows, err := connection.QueryxContext(ctx, sqlOperationsWallet, walletID, operSign, timeFromArg, timeToArg)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, processPgError(err, "wallet_oper_journal")
+	}
+	defer rows.Close()
+
+	operations := make([]*model.Operation, 0)
+	for rows.Next() {
+		operation := &model.Operation{}
+		err := rows.StructScan(operation)
+		if err != nil {
+			return nil, err
+		}
+		operations = append(operations, operation)
+	}
+	return operations, nil
 }

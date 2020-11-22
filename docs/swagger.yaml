@@ -95,6 +95,33 @@ info:
   title: Payment System API
   version: "1.0"
 paths:
+  /api/v1/payment/deposit:
+    post:
+      consumes:
+      - application/json
+      description: Transferring money between wallets
+      parameters:
+      - description: Request Payload
+        in: body
+        name: Payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.TransferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success operation
+          schema:
+            allOf:
+            - $ref: '#/definitions/service.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TransferResponse'
+              type: object
+      summary: transfer money
+      tags:
+      - Payment System
   /api/v1/payment/wallet:
     get:
       consumes:
@@ -145,33 +172,6 @@ paths:
                   $ref: '#/definitions/dto.WalletResponse'
               type: object
       summary: New wallet
-      tags:
-      - Payment System
-  /api/v1/payment/wallet/deposit:
-    post:
-      consumes:
-      - application/json
-      description: Transferring money between wallets
-      parameters:
-      - description: Request Payload
-        in: body
-        name: Payload
-        required: true
-        schema:
-          $ref: '#/definitions/dto.TransferRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success operation
-          schema:
-            allOf:
-            - $ref: '#/definitions/service.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/dto.TransferResponse'
-              type: object
-      summary: transfer money
       tags:
       - Payment System
 swagger: "2.0"
