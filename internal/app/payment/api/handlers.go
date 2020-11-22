@@ -184,14 +184,18 @@ func (a *API) operations(w http.ResponseWriter, r *http.Request) (responseErr er
 	if err != nil {
 		return fmt.Errorf("%w: date_to", ErrInvalidParameter)
 	}
+	if !dateFrom.IsZero() && !dateTo.IsZero() && dateFrom.After(dateTo) {
+		return fmt.Errorf("%w: date_to must be later than date_from", ErrInvalidParameter)
+	}
 
-	w.Header().Add("Content-Type", "text/csv")
-	w.Header().Add("Content-Disposition", "attachment;filename="+makeFileNameCSV(operationName, dateFrom, dateTo))
-	w.WriteHeader(http.StatusOK)
+
 	operations, err := a.db.OperationWallet(ctx, uint(walletID), operationSign, dateFrom, dateTo)
 	if err != nil {
 		return err
 	}
+
+	w.Header().Add("Content-Type", "text/csv")
+	w.Header().Add("Content-Disposition", "attachment;filename="+makeFileNameCSV(operationName, dateFrom, dateTo))
 	if err = writeOperationsCSV(w, operations); err != nil {
 		log.Error(err)
 		return ErrSomethingWentWrong
