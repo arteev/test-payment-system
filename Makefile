@@ -1,7 +1,7 @@
 VERSION=$(shell git describe --tags --match '*.*.*' --always --abbrev=0)
 BUILD_TIME=$(shell date -u '+%Y-%m-%d_%I:%M:%S%p')
 GIT_HASH=$(shell git rev-parse HEAD)
-IMPORT_VERSION=test-payment-system
+IMPORT_VERSION=test-payment-system/pkg/version
 LDFLAGS="-w -s -X ${IMPORT_VERSION}.Version=${VERSION} -X ${IMPORT_VERSION}.DateBuild=${BUILD_TIME} -X ${IMPORT_VERSION}.GitHash=${GIT_HASH}"
 
 
@@ -9,8 +9,9 @@ DOCKER_SRC=./build/docker.local
 DOCKER_COMPOSE_CMD=docker-compose -f ${DOCKER_SRC}/docker-compose.yml
 DOCKER_COMPOSE_EXT_SERVICES=pg
 
-build: build-local
-	${DOCKER_COMPOSE_CMD} build --force-rm
+.PHONY: build
+build:
+	${DOCKER_COMPOSE_CMD} build --force-rm --build-arg LDFLAGS=${LDFLAGS}
 
 build-local:
 	CGO_ENABLED=0 go build \
