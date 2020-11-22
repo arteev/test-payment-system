@@ -122,6 +122,9 @@ func (a *API) Transfer(ctx context.Context, in service.DataObject) (response int
 	if err != nil {
 		return nil, err
 	}
+	if request.Amount > walletFrom.Balance {
+		return nil, ErrNotEnoughMoney
+	}
 
 	transfer, err := a.db.Transfer(ctx, walletFrom.ID, walletTo.ID, request.Amount)
 	if err != nil {
@@ -187,7 +190,6 @@ func (a *API) operations(w http.ResponseWriter, r *http.Request) (responseErr er
 	if !dateFrom.IsZero() && !dateTo.IsZero() && dateFrom.After(dateTo) {
 		return fmt.Errorf("%w: date_to must be later than date_from", ErrInvalidParameter)
 	}
-
 
 	operations, err := a.db.OperationWallet(ctx, uint(walletID), operationSign, dateFrom, dateTo)
 	if err != nil {
