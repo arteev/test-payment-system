@@ -58,3 +58,10 @@ cover-calc:
 # cover-clean removes temp cover files
 cover-clean:
 	rm cover.out clear_cover.out
+
+
+tools:
+	GO111MODULE=off go get -u github.com/swaggo/swag/cmd/swag
+
+swagger:
+	 swag init
