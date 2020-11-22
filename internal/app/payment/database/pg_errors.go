@@ -11,6 +11,7 @@ var (
 	ErrWrongBalance         = errors.New("balance must not be negative")
 	ErrWalletNameIsTooShort = errors.New("wallet name is too short")
 	ErrWalletNameMustUnique = errors.New("wallet name must be unique")
+	ErrDuplicateWalletOperation = errors.New("duplicate wallet operation")
 )
 
 func processPgError(err error, entityName string) error {

@@ -18,6 +18,8 @@ import (
 
 const defaultDriverSQLX = "pgx"
 
+const duplicateDeltaTime = "2 minutes" // Postgresql interval
+
 // Errors
 var (
 	ErrNotFound = errors.New("entity not found")
@@ -79,7 +81,8 @@ func (db *DB) insertWalletOperJournal(ctx context.Context, tx *Transaction, jour
 		journal.WalletID,
 		journal.OperSign,
 		journal.Amount,
-		journal.Unit)
+		journal.Unit,
+		journal.Hash)
 	if err != nil {
 		return 0, processPgError(err, "wallet_oper_journal")
 	}
@@ -136,12 +139,17 @@ func (db *DB) Deposit(ctx context.Context, walletID uint, amount float64) (_ *mo
 		return nil, processPgError(err, "deposit wallet")
 	}
 
-	journalID, err := db.insertWalletOperJournal(ctx, tx, model.WalletOperJournal{
+	journalItem := model.WalletOperJournal{
 		WalletID: walletID,
 		OperSign: model.OperationSignIncome,
 		Amount:   amount,
 		Unit:     model.UnitNameDeposit,
-	})
+	}
+	journalItem.Hash = journalItem.GetHashWalletOperation()
+	if err = db.checkDuplicateWalletOperJournal(ctx, tx, journalItem); err != nil {
+		return nil, processPgError(err, "")
+	}
+	journalID, err := db.insertWalletOperJournal(ctx, tx, journalItem)
 	if err != nil {
 		return nil, processPgError(err, "")
 	}
@@ -183,22 +191,32 @@ func (db *DB) Transfer(ctx context.Context, walletFrom, walletTo uint,
 		return nil, processPgError(err, "deposit wallet")
 	}
 
-	journalFromID, err := db.insertWalletOperJournal(ctx, tx, model.WalletOperJournal{
+	journalItem := model.WalletOperJournal{
 		WalletID: walletFrom,
 		OperSign: model.OperationSignTransfer,
 		Amount:   amount,
 		Unit:     model.UnitNameTransfer,
-	})
+	}
+	journalItem.Hash = journalItem.GetHashWalletOperation(walletTo)
+
+	err = db.checkDuplicateWalletOperJournal(ctx, tx, journalItem)
 	if err != nil {
 		return nil, processPgError(err, "")
 	}
 
-	journalToID, err := db.insertWalletOperJournal(ctx, tx, model.WalletOperJournal{
+	journalFromID, err := db.insertWalletOperJournal(ctx, tx, journalItem)
+	if err != nil {
+		return nil, processPgError(err, "")
+	}
+
+	journalItem = model.WalletOperJournal{
 		WalletID: walletTo,
 		OperSign: model.OperationSignIncome,
 		Amount:   amount,
 		Unit:     model.UnitNameTransfer,
-	})
+	}
+	journalItem.Hash = journalItem.GetHashWalletOperation()
+	journalToID, err := db.insertWalletOperJournal(ctx, tx, journalItem)
 	if err != nil {
 		return nil, processPgError(err, "")
 	}
@@ -235,6 +253,28 @@ func (db *DB) Transfer(ctx context.Context, walletFrom, walletTo uint,
 		return nil, processPgError(err, "")
 	}
 	return transfer, nil
+}
+
+func (db *DB) checkDuplicateWalletOperJournal(ctx context.Context, tx *Transaction,
+	journal model.WalletOperJournal) error {
+	if journal.Hash == "" {
+		return nil
+	}
+
+	var exists int
+	sqlCommand := fmt.Sprintf(sqlExistsDuplicateOperJournal, duplicateDeltaTime) // problem sqlx parameters with interval?
+	err := tx.GetContext(ctx, &exists, sqlCommand, journal.Hash)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil
+		}
+		return processPgError(err, "")
+	}
+	if exists > 0 {
+		return fmt.Errorf("%w: period %s", ErrDuplicateWalletOperation, duplicateDeltaTime)
+	}
+
+	return nil
 }
 
 func (db *DB) OperationWallet(ctx context.Context, walletID uint, operSign *model.OperationSign, timeFrom,

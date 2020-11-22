@@ -1,6 +1,11 @@
 package model
 
-import "time"
+import (
+	"crypto/sha1"
+	"encoding/base64"
+	"fmt"
+	"time"
+)
 
 // Wallet model
 type Wallet struct {
@@ -34,6 +39,7 @@ type WalletOperJournal struct {
 	OperSign OperationSign `db:"oper_sign"`
 	Amount   float64       `db:"amount"`
 	Unit     Unit          `db:"unit"`
+	Hash     string        `db:"hash"`
 }
 
 // WalletTransfer wallet transfer money model
@@ -43,4 +49,15 @@ type WalletTransfer struct {
 	WalletTo   uint      `db:"wallet_to"`
 	Amount     float64   `db:"amount"`
 	CreatedAt  time.Time `db:"created_at"`
+}
+
+// GetHashWalletOperation calculating the hash of the operation with the wallet
+func (j WalletOperJournal) GetHashWalletOperation(args ...interface{}) string {
+	dataOperation := fmt.Sprintf("%d%s%.2f", j.WalletID, j.Unit, j.Amount)
+	for _, arg := range args {
+		dataOperation += fmt.Sprintf("%v", arg)
+	}
+	hasher := sha1.New()
+	hasher.Write([]byte(dataOperation))
+	return base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 }

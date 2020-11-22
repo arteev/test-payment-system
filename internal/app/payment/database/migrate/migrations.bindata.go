@@ -2,6 +2,8 @@
 // sources:
 // 0_init.down.sql
 // 0_init.up.sql
+// 1_hash.down.sql
+// 1_hash.up.sql
 package migrations
 
 import (
@@ -118,6 +120,46 @@ func _0_initUpSql() (*asset, error) {
 	return a, nil
 }
 
+var __1_hashDownSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x72\xf4\x09\x71\x0d\x52\x08\x71\x74\xf2\x71\x55\x28\x4f\xcc\xc9\x49\x2d\x89\xcf\x2f\x48\x2d\x8a\xcf\xca\x2f\x2d\xca\x4b\xcc\xe1\x52\x50\x50\x50\x70\x09\xf2\x0f\x50\x70\xf6\xf7\x09\xf5\xf5\x53\xf0\x74\x53\x70\x8d\xf0\x0c\x0e\x09\x56\xc8\x48\x2c\xce\xb0\x06\x04\x00\x00\xff\xff\x8c\xd1\x7d\xc0\x3f\x00\x00\x00")
+
+func _1_hashDownSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__1_hashDownSql,
+		"1_hash.down.sql",
+	)
+}
+
+func _1_hashDownSql() (*asset, error) {
+	bytes, err := _1_hashDownSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "1_hash.down.sql", size: 63, mode: os.FileMode(436), modTime: time.Unix(1606053421, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var __1_hashUpSql = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x72\xf4\x09\x71\x0d\x52\x08\x71\x74\xf2\x71\x55\x28\x4f\xcc\xc9\x49\x2d\x89\xcf\x2f\x48\x2d\x8a\xcf\xca\x2f\x2d\xca\x4b\xcc\xe1\x52\x50\x50\x50\x70\x74\x71\x51\x70\xf6\xf7\x09\xf5\xf5\x53\xf0\x74\x53\xf0\xf3\x0f\x51\x70\x8d\xf0\x0c\x0e\x09\x56\xc8\x48\x2c\xce\x50\x28\x4b\x2c\x4a\xce\x48\x2c\xd2\x30\x33\xd1\xb4\x06\x04\x00\x00\xff\xff\x26\x47\x5d\x8b\x4e\x00\x00\x00")
+
+func _1_hashUpSqlBytes() ([]byte, error) {
+	return bindataRead(
+		__1_hashUpSql,
+		"1_hash.up.sql",
+	)
+}
+
+func _1_hashUpSql() (*asset, error) {
+	bytes, err := _1_hashUpSqlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "1_hash.up.sql", size: 78, mode: os.FileMode(436), modTime: time.Unix(1606053424, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 // Asset loads and returns the asset for the given name.
 // It returns an error if the asset could not be found or
 // could not be loaded.
@@ -172,6 +214,8 @@ func AssetNames() []string {
 var _bindata = map[string]func() (*asset, error){
 	"0_init.down.sql": _0_initDownSql,
 	"0_init.up.sql":   _0_initUpSql,
+	"1_hash.down.sql": _1_hashDownSql,
+	"1_hash.up.sql":   _1_hashUpSql,
 }
 
 // AssetDir returns the file names below a certain
@@ -217,6 +261,8 @@ type bintree struct {
 var _bintree = &bintree{nil, map[string]*bintree{
 	"0_init.down.sql": &bintree{_0_initDownSql, map[string]*bintree{}},
 	"0_init.up.sql":   &bintree{_0_initUpSql, map[string]*bintree{}},
+	"1_hash.down.sql": &bintree{_1_hashDownSql, map[string]*bintree{}},
+	"1_hash.up.sql":   &bintree{_1_hashUpSql, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory
