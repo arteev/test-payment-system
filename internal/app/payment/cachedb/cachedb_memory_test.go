@@ -28,15 +28,17 @@ func TestCacheDB_GetWallet(t *testing.T) {
 		dbMock.EXPECT().GetWallet(ctx, walletID).Return(nil, wantError)
 		_, err := cache.GetWallet(ctx, walletID)
 		assert.EqualError(t, err, wantError.Error())
-		_, ok := cache.cache.Get(keyWallet)
+		key := getKeyWallet(walletID)
+		_, ok := cache.cache.Get(key)
 		assert.False(t, ok)
 	})
 	t.Run("from_cache", func(t *testing.T) {
 		wantWallet := &model.Wallet{
 			ID: walletID,
 		}
-		cache.cache.Set(keyWallet, wantWallet, time.Millisecond*500)
-		defer cache.cache.Delete(keyWallet)
+		key := getKeyWallet(walletID)
+		cache.cache.Set(key, wantWallet, time.Millisecond*500)
+		defer cache.cache.Delete(key)
 		wallet, err := cache.GetWallet(ctx, walletID)
 		assert.NoError(t, err)
 		assert.Equal(t, wantWallet, wallet)
@@ -51,7 +53,8 @@ func TestCacheDB_GetWallet(t *testing.T) {
 		assert.Equal(t, wantWallet, wallet)
 		assert.NoError(t, err)
 
-		gotWallet, ok := cache.cache.Get(keyWallet)
+		key := getKeyWallet(walletID)
+		gotWallet, ok := cache.cache.Get(key)
 		assert.True(t, ok)
 		assert.Equal(t, wantWallet, gotWallet)
 	})

@@ -2,6 +2,7 @@ package cachedb
 
 import (
 	"context"
+	"strconv"
 	"test-payment-system/internal/app/payment/database"
 	"test-payment-system/internal/app/payment/database/model"
 	"time"
@@ -40,7 +41,8 @@ func New(db database.Database) *CacheDB {
 }
 
 func (c *CacheDB) GetWallet(ctx context.Context, id uint) (*model.Wallet, error) {
-	if wallet, ok := c.cache.Get(keyWallet); ok {
+	key := getKeyWallet(id)
+	if wallet, ok := c.cache.Get(key); ok {
 		return wallet.(*model.Wallet), nil
 	}
 
@@ -49,7 +51,35 @@ func (c *CacheDB) GetWallet(ctx context.Context, id uint) (*model.Wallet, error)
 		return nil, err
 	}
 
-	c.cache.Set(keyWallet, wallet, expirationWallet)
+	c.cache.Set(key, wallet, expirationWallet)
 
 	return wallet, nil
+}
+
+func (c *CacheDB) Deposit(ctx context.Context, walletID uint,
+	amount float64) (*model.WalletDeposit, error) {
+	deposit, err := c.Database.Deposit(ctx, walletID, amount)
+	if err != nil {
+		return nil, err
+	}
+	c.invalidateCache(walletID)
+	return deposit, nil
+}
+func (c *CacheDB) Transfer(ctx context.Context, walletFrom, walletTo uint,
+	amount float64) (*model.WalletTransfer, error) {
+	transter, err := c.Database.Transfer(ctx, walletFrom, walletTo, amount)
+	if err != nil {
+		return nil, err
+	}
+	c.invalidateCache(walletFrom)
+	c.invalidateCache(walletTo)
+	return transter, nil
+}
+
+func (c *CacheDB) invalidateCache(id uint) {
+	c.cache.Delete(getKeyWallet(id))
+}
+
+func getKeyWallet(id uint) string {
+	return keyWallet + "." + strconv.FormatUint(uint64(id), 10)
 }
