@@ -38,7 +38,7 @@ type paymentSuite struct {
 func (s *paymentSuite) SetupSuite() {
 	rand.Seed(time.Now().UTC().UnixNano())
 	configFile := "payment_test.yaml"
-	container := di.BuildContainer(configFile, true)
+	container := di.BuildContainer(configFile)
 	err := container.Invoke(func(c *config.Config) error {
 		c.Logger.Level = "error"
 		s.port = c.API.Port

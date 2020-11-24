@@ -15,7 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func BuildContainer(configFile string, isTesting bool) *dig.Container {
+func BuildContainer(configFile string) *dig.Container {
 	container := dig.New()
 
 	if err := container.Provide(config.Factory(configFile)); err != nil {
@@ -41,9 +41,6 @@ func BuildContainer(configFile string, isTesting bool) *dig.Container {
 	})
 	container.Provide(database.New)
 	container.Provide(func(db *database.DB) (database.Database, error) {
-		if isTesting {
-			return db, nil
-		}
 		return cachedb.New(db), nil
 	})
 

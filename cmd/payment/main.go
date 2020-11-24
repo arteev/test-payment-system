@@ -12,7 +12,7 @@ import (
 func main() {
 	configFile := flag.String("config", "", "config file")
 	flag.Parse()
-	container := di.BuildContainer(*configFile, false)
+	container := di.BuildContainer(*configFile)
 	err := container.Invoke(func(c *config.Config) error {
 		return logger.SetupLogger(c.Mode, c.Logger)
 	})
