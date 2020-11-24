@@ -124,7 +124,7 @@ Request parameters
 
 |Name|Required|type|
 |---|---|---|
-| oper |  optional | string:enum(eposit,withdraw) |
+| oper |  optional | string:enum(deposit,withdraw) |
 | date_from | optional | unix time  | 
 | date_to | optional | unix time  | 
 
