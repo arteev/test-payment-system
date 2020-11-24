@@ -1,7 +1,8 @@
 run:
   concurrency: 4
   timeout: 10m
-
+  # include test files or not, default is true
+  tests: false
 linters:
   enable-all: true
   disable:

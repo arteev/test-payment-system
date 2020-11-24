@@ -55,7 +55,7 @@ func (r *DepositRequest) Validate() error {
 	if r.Amount <= 0 {
 		return fmt.Errorf("invalid parameter: amount of the deposit must be positive")
 	}
-	if r.WalletID <= 0 {
+	if r.WalletID == 0 {
 		return fmt.Errorf("invalid parameter: wallet id required")
 	}
 	return nil
@@ -107,10 +107,10 @@ func (r *TransferRequest) Validate() error {
 	if r.Amount <= 0 {
 		return fmt.Errorf("invalid parameter: amount of the deposit must be positive")
 	}
-	if r.WalletFrom <= 0 {
+	if r.WalletFrom == 0 {
 		return fmt.Errorf("invalid parameter: wallet_from required")
 	}
-	if r.WalletTo <= 0 {
+	if r.WalletTo == 0 {
 		return fmt.Errorf("invalid parameter: wallet_to required")
 	}
 	if r.WalletFrom == r.WalletTo {
@@ -123,7 +123,7 @@ func (r *TransferRequest) Validate() error {
 type TransferResponse struct {
 	ID         uint    `json:"id"`
 	WalletFrom uint    `json:"wallet_from"`
-	WalletTo   uint    `json:"wallet_from"`
+	WalletTo   uint    `json:"wallet_to"`
 	Amount     float64 `json:"amount"`
 	CreatedAt  int64   `json:"created_at"`
 }

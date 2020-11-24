@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
 	"github.com/jackc/pgconn"
 )
 
 var (
-	ErrWrongBalance         = errors.New("balance must not be negative")
-	ErrWalletNameIsTooShort = errors.New("wallet name is too short")
-	ErrWalletNameMustUnique = errors.New("wallet name must be unique")
+	ErrWrongBalance             = errors.New("balance must not be negative")
+	ErrWalletNameIsTooShort     = errors.New("wallet name is too short")
+	ErrWalletNameMustUnique     = errors.New("wallet name must be unique")
 	ErrDuplicateWalletOperation = errors.New("duplicate wallet operation")
 )
 

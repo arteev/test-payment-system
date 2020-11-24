@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/gofrs/uuid"
 	"net/http"
 	"strconv"
 	"test-payment-system/internal/app/payment/database/model"
@@ -11,6 +10,8 @@ import (
 	"test-payment-system/internal/pkg/apilog"
 	"test-payment-system/internal/pkg/service"
 	"time"
+
+	"github.com/gofrs/uuid"
 )
 
 // NewWallet create new wallet
@@ -30,12 +31,12 @@ func (a *API) NewWallet(ctx context.Context, in service.DataObject) (response in
 
 	name := request.Name
 	if name == "" {
-		if uid, err := uuid.NewV1(); err != nil {
+		uid, err := uuid.NewV1()
+		if err != nil {
 			log.Error(err)
 			return nil, ErrSomethingWentWrong
-		} else {
-			name = uid.String()
 		}
+		name = uid.String()
 	}
 	wallet, err := a.db.NewWallet(ctx, request.Name)
 	if err != nil {

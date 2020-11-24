@@ -10,7 +10,11 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// Logger global logger
+// nolint:gochecknoglobals
 var Logger *zap.SugaredLogger
+
+const skipCallerLogger = 5
 
 func GetLogLevel(l string) zapcore.Level {
 	for level := zapcore.DebugLevel; level < zapcore.FatalLevel; level++ {
@@ -30,9 +34,7 @@ func SetupLogger(mode string, configLogger *config.Logger) error {
 	}
 	level := GetLogLevel(configLogger.Level)
 	zapConfig.Level.SetLevel(level)
-	zapConfig.EncoderConfig.EncodeCaller = createCallerFunc(5)
-
-
+	zapConfig.EncoderConfig.EncodeCaller = createCallerFunc(skipCallerLogger)
 
 	log, err := zapConfig.Build()
 	if err != nil {
@@ -65,5 +67,3 @@ func createCallerFunc(skip int) func(caller zapcore.EntryCaller, enc zapcore.Pri
 		enc.AppendString(filepath.Base(caller.FullPath()) + " " + getCallerName(skip))
 	}
 }
-
-

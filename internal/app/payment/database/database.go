@@ -2,9 +2,10 @@ package database
 
 import (
 	"context"
-	"github.com/jmoiron/sqlx"
 	"test-payment-system/internal/app/payment/database/model"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 // Transaction alias of type sqlx.Tx

@@ -2,9 +2,10 @@ package requestid
 
 import (
 	"context"
-	uuid "github.com/satori/go.uuid"
 	"net/http"
 	"test-payment-system/pkg/contextkey"
+
+	uuid "github.com/satori/go.uuid"
 )
 
 const maxLenRequestID = 30
@@ -66,10 +67,10 @@ func NewOrFromRequest(r *http.Request) (rid RequestID) {
 	return NewFromString(value)
 }
 
-// RequestIDFromContext obtains RequestID from given context
+// FromContext obtains RequestID from given context
 // returning it. If the given context has no request id, then
 // blank request it will be returned.
-func RequestIDFromContext(ctx context.Context) (rid RequestID) {
+func FromContext(ctx context.Context) (rid RequestID) {
 	rid.FromContext(ctx)
 	return rid
 }

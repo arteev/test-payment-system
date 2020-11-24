@@ -7,9 +7,3 @@ type Key int
 const (
 	RequestIDKey Key = iota + 1
 )
-
-var (
-	KeyNames = map[Key]string{
-		RequestIDKey: "request_id",
-	}
-)

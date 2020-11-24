@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"github.com/gorilla/mux"
-	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,6 +9,9 @@ import (
 	"syscall"
 	"test-payment-system/internal/pkg/config"
 	"time"
+
+	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 )
 
 const (
@@ -53,7 +54,7 @@ func (s *Service) handleSignals(ctx context.Context) context.Context {
 	signals := make(chan os.Signal, 1)
 	ctx, cancel := context.WithCancel(ctx)
 	go func() {
-		signal.Notify(signals, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
+		signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 		sig := <-signals
 		defer signal.Stop(signals)
 		s.log.Debug("signal:", sig)
@@ -104,7 +105,6 @@ func (s *Service) Start() error {
 		s.log.Errorw("serve listener is stopped", zap.Error(err))
 		return err
 	}
-	return nil
 }
 
 func (s *Service) getLoggerHander(routers *mux.Router) http.Handler {

@@ -2,8 +2,6 @@ package main
 
 import (
 	"flag"
-	"go.uber.org/dig"
-	"go.uber.org/zap"
 	"log"
 	"test-payment-system/internal/app/payment/api"
 	"test-payment-system/internal/app/payment/cachedb"
@@ -12,13 +10,13 @@ import (
 	intConfig "test-payment-system/internal/pkg/config"
 	"test-payment-system/internal/pkg/service"
 	serviceBase "test-payment-system/internal/pkg/service"
-	. "test-payment-system/pkg/logger"
+	"test-payment-system/pkg/logger"
+
+	"go.uber.org/dig"
+	"go.uber.org/zap"
 )
 
-const serviceName = "payment"
-
 func buildContainer(configFile string) *dig.Container {
-
 	container := dig.New()
 
 	if err := container.Provide(config.Factory(configFile)); err != nil {
@@ -32,7 +30,7 @@ func buildContainer(configFile string) *dig.Container {
 	})
 
 	container.Provide(func() *zap.SugaredLogger {
-		return Logger
+		return logger.Logger
 	})
 
 	container.Provide(service.New)
@@ -55,16 +53,16 @@ func main() {
 	flag.Parse()
 	container := buildContainer(*configFile)
 	err := container.Invoke(func(c *config.Config) error {
-		return SetupLogger(c.Mode, c.Logger)
+		return logger.SetupLogger(c.Mode, c.Logger)
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = container.Invoke(func(service *service.Service) {
-		Logger.Info("start")
-		service.Start()
+	err = container.Invoke(func(service *service.Service) error {
+		logger.Logger.Info("start")
+		return service.Start()
 	})
 	if err != nil {
-		Logger.Fatal(err)
+		logger.Logger.Fatal(err)
 	}
 }

@@ -2,10 +2,11 @@ package cachedb
 
 import (
 	"context"
-	cache "github.com/patrickmn/go-cache"
 	"test-payment-system/internal/app/payment/database"
 	"test-payment-system/internal/app/payment/database/model"
 	"time"
+
+	"github.com/patrickmn/go-cache"
 )
 
 // CacheDB in memory cache for Database
@@ -24,15 +25,16 @@ const (
 	keyWallet = "wallet"
 )
 
-var (
+const (
 	expirationWallet = time.Minute * 2
 )
 
 // New returns new CacheDB
 func New(db database.Database) *CacheDB {
+	defaultExpiration, cleanupInterval := time.Minute*5, time.Minute*10
 	newCache := &CacheDB{
 		Database: db,
-		cache:    cache.New(5*time.Minute, 10*time.Minute),
+		cache:    cache.New(defaultExpiration, cleanupInterval),
 	}
 	return newCache
 }

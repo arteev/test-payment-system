@@ -6,14 +6,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-//TODO: parse from command line. High priority.
-
 const (
 	ModeDevelopment = "development"
 	ModeProduction  = "production"
 )
 
-var CurrentMode string
+// nolint:gochecknoglobals
+var currentMode string
 
 type Service struct {
 	Mode string `mapstructure:"mode" yaml:"mode"`
@@ -25,8 +24,12 @@ func init() {
 	})
 }
 
+func CurrentMode() string {
+	return currentMode
+}
+
 func (s *Service) Init() error {
-	CurrentMode = s.Mode
+	currentMode = s.Mode
 	return nil
 }
 

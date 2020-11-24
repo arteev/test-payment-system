@@ -2,24 +2,27 @@ package database
 
 import (
 	"context"
+
 	"github.com/jackc/pgx/v4"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
+const skipCallerLogger = 9
+
 type loggerWrapZap2Pgx struct {
 	log *zap.SugaredLogger
 }
 
-var levels = map[pgx.LogLevel]zapcore.Level{
-	pgx.LogLevelTrace: zapcore.DebugLevel,
-	pgx.LogLevelDebug: zapcore.DebugLevel,
-	pgx.LogLevelInfo:  zapcore.InfoLevel,
-	pgx.LogLevelWarn:  zapcore.WarnLevel,
-	pgx.LogLevelError: zapcore.ErrorLevel,
-}
-
 func getLevelFromZap(log *zap.SugaredLogger) pgx.LogLevel {
+	var levels = map[pgx.LogLevel]zapcore.Level{
+		pgx.LogLevelTrace: zapcore.DebugLevel,
+		pgx.LogLevelDebug: zapcore.DebugLevel,
+		pgx.LogLevelInfo:  zapcore.InfoLevel,
+		pgx.LogLevelWarn:  zapcore.WarnLevel,
+		pgx.LogLevelError: zapcore.ErrorLevel,
+	}
+
 	core := log.Desugar().Core()
 	prevLevel := pgx.LogLevelError
 	for level := pgx.LogLevelError; level <= pgx.LogLevelTrace; level++ {
@@ -34,7 +37,7 @@ func getLevelFromZap(log *zap.SugaredLogger) pgx.LogLevel {
 
 func newLoggerWrapPgx(log *zap.SugaredLogger) *loggerWrapZap2Pgx {
 	log = log.Desugar().
-		WithOptions(zap.AddCallerSkip(9)).
+		WithOptions(zap.AddCallerSkip(skipCallerLogger)).
 		Sugar()
 	return &loggerWrapZap2Pgx{
 		log: log,

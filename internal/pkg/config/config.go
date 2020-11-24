@@ -13,10 +13,9 @@ const (
 	DefaultEnvPrefix = "PAYMENT"
 )
 
-var DefaultConfigPaths = []string{".", "./configs"}
-
 type defaultsSetter = func()
 
+// nolint: gochecknoglobals
 var (
 	defaultsSetters []defaultsSetter
 	muSetters       sync.RWMutex
@@ -31,7 +30,8 @@ func New(v interface{}, envPrefix, configFile string) error {
 		envPrefix = DefaultEnvPrefix
 	}
 	viper.SetEnvPrefix(envPrefix)
-	for _, path := range DefaultConfigPaths {
+	defaultConfigPaths := []string{".", "./configs"}
+	for _, path := range defaultConfigPaths {
 		viper.AddConfigPath(path)
 	}
 	viper.AutomaticEnv()
@@ -72,6 +72,7 @@ func RegisterDefaultsSetter(setter defaultsSetter) {
 }
 
 // for tests.
+// nolint: unused deadcode
 func unRegisterAllDefaultsSetters() {
 	muSetters.Lock()
 	defer muSetters.Unlock()

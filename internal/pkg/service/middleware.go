@@ -2,17 +2,17 @@ package service
 
 import (
 	"fmt"
-	"go.uber.org/zap"
 	"io"
 	"os"
 	"test-payment-system/pkg/requestid"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/gorilla/handlers"
 
 	"net/http"
 )
-
 
 // RequestScope middleware request context initialization
 func RequestScope(next http.Handler) http.Handler {
@@ -25,7 +25,7 @@ func RequestScope(next http.Handler) http.Handler {
 
 func logFormatter(log *zap.SugaredLogger) handlers.LogFormatter {
 	return func(writer io.Writer, params handlers.LogFormatterParams) {
-		duration := time.Now().Sub(params.TimeStamp)
+		duration := time.Since(params.TimeStamp)
 		remoteIP := params.Request.Header.Get("X-Real-Ip")
 		if remoteIP == "" {
 			remoteIP = params.Request.RemoteAddr

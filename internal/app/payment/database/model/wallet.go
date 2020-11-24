@@ -58,6 +58,6 @@ func (j WalletOperJournal) GetHashWalletOperation(args ...interface{}) string {
 		dataOperation += fmt.Sprintf("%v", arg)
 	}
 	hasher := sha1.New()
-	hasher.Write([]byte(dataOperation))
+	hasher.Write([]byte(dataOperation)) //lint: errcheck
 	return base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 }

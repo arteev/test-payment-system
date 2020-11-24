@@ -1,8 +1,6 @@
 package api
 
 import (
-	"github.com/gorilla/mux"
-	"go.uber.org/zap"
 	"net/http"
 	"net/http/pprof"
 	"test-payment-system/internal/app/payment/database"
@@ -10,6 +8,9 @@ import (
 	"test-payment-system/internal/pkg/config"
 	"test-payment-system/internal/pkg/service"
 	"test-payment-system/pkg/version"
+
+	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 )
 
 const PathAPIPrefix = "/api/v1/payment"
@@ -37,7 +38,7 @@ func (a *API) AddDebugHandler(r *mux.Router, prefix string) {
 }
 
 func (a *API) GetRoutes(r *mux.Router) *mux.Router {
-	if config.CurrentMode == config.ModeDevelopment {
+	if config.CurrentMode() == config.ModeDevelopment {
 		a.AddDebugHandler(r, PathAPIPrefix)
 	}
 	routerInternal := r.PathPrefix("/api/v1/internal/payment").Subrouter()
@@ -68,11 +69,4 @@ func (a *API) GetRoutes(r *mux.Router) *mux.Router {
 
 func (a *API) Close() error {
 	return nil
-}
-
-func checkAudiences(_ string, audiences []string) bool {
-	if len(audiences) == 0 {
-		return true
-	}
-	return false
 }

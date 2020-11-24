@@ -3,6 +3,9 @@ package database
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"test-payment-system/internal/pkg/config"
+
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres" // comment
 	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
@@ -11,8 +14,6 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib" // register pg driver
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
-	"net/url"
-	"test-payment-system/internal/pkg/config"
 )
 
 const defaultDriverPGX = "pgx"
@@ -26,7 +27,6 @@ type PgDatabase struct {
 	Connection *sqlx.DB
 	Logger     *zap.SugaredLogger
 }
-
 
 func New(cfg *config.DBConfig, log *zap.SugaredLogger,
 	resource ResourcesGetter) (*PgDatabase, error) {

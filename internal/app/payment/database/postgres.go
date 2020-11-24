@@ -5,18 +5,17 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres" // comment
-	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
-	_ "github.com/jackc/pgx/v4/stdlib" // register pg driver
-	"go.uber.org/zap"
 	migrations "test-payment-system/internal/app/payment/database/migrate"
 	"test-payment-system/internal/app/payment/database/model"
 	"test-payment-system/internal/pkg/config"
 	"test-payment-system/pkg/database"
 	"time"
-)
 
-const defaultDriverSQLX = "pgx"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres" // comment
+	bindata "github.com/golang-migrate/migrate/v4/source/go_bindata"
+	_ "github.com/jackc/pgx/v4/stdlib" // register pg driver
+	"go.uber.org/zap"
+)
 
 const duplicateDeltaTime = "2 minutes" // Postgresql interval
 
@@ -75,7 +74,8 @@ func (db *DB) GetWallet(ctx context.Context, id uint) (*model.Wallet, error) {
 	return wallet, nil
 }
 
-func (db *DB) insertWalletOperJournal(ctx context.Context, tx *Transaction, journal model.WalletOperJournal) (uint, error) {
+func (db *DB) insertWalletOperJournal(ctx context.Context, tx *Transaction,
+	journal model.WalletOperJournal) (uint, error) {
 	var id uint
 	err := tx.GetContext(ctx, &id, sqlInsertWalletOperJournal,
 		journal.WalletID,
@@ -127,10 +127,14 @@ func (db *DB) Deposit(ctx context.Context, walletID uint, amount float64) (_ *mo
 		return nil, err
 	}
 	defer func() {
+		var err error
 		if returnErr != nil {
-			tx.Rollback()
+			err = tx.Rollback()
 		} else {
-			tx.Commit()
+			err = tx.Commit()
+		}
+		if err != nil {
+			db.Logger.Errorw("tx error", zap.Error(err))
 		}
 	}()
 
@@ -179,10 +183,14 @@ func (db *DB) Transfer(ctx context.Context, walletFrom, walletTo uint,
 		return nil, err
 	}
 	defer func() {
+		var err error
 		if returnErr != nil {
-			tx.Rollback()
+			err = tx.Rollback()
 		} else {
-			tx.Commit()
+			err = tx.Commit()
+		}
+		if err != nil {
+			db.Logger.Errorw("tx error", zap.Error(err))
 		}
 	}()
 

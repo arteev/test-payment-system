@@ -5,17 +5,21 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/json"
-	"github.com/pkg/errors"
 	"net/http"
 	"strings"
 	"test-payment-system/pkg/requestid"
+
+	"github.com/pkg/errors"
 )
 
 type EmptyType struct{}
 
-var Empty = &EmptyType{}
+func Empty() *EmptyType {
+	return &EmptyType{}
+}
 
 // Response for swagger generator
+// nolint: lll
 type Response struct {
 	Data      interface{} `json:"data"`
 	Success   bool        `json:"success"`
@@ -62,7 +66,7 @@ func RespondJSON(w http.ResponseWriter, r *http.Request, data interface{}, err e
 	)
 	w.Header().Set("Content-Type", "application/json")
 	ctx := r.Context()
-	requestID := requestid.RequestIDFromContext(ctx)
+	requestID := requestid.FromContext(ctx)
 
 	if err != nil {
 		data := make(map[string]interface{}, 1)

@@ -7,9 +7,9 @@ import (
 // Config auth service
 type Config struct {
 	*config.Service `mapstructure:"service" yaml:"service"`
-	DB     *config.DBConfig `mapstructure:"db" yaml:"db"`
-	Logger *config.Logger   `mapstructure:"logger" yaml:"logger"`
-	API    *config.API      `mapstructure:"api" yaml:"api"`
+	DB              *config.DBConfig `mapstructure:"db" yaml:"db"`
+	Logger          *config.Logger   `mapstructure:"logger" yaml:"logger"`
+	API             *config.API      `mapstructure:"api" yaml:"api"`
 }
 
 // New creates and returns config
