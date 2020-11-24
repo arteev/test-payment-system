@@ -20,3 +20,8 @@ type Database interface {
 	OperationWallet(ctx context.Context, walletID uint, operSign *model.OperationSign, timeFrom,
 		timeTo time.Time) ([]*model.Operation, error)
 }
+
+type Migrater interface {
+	MigrateDown() error
+	MigrateUp() error
+}

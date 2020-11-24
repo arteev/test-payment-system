@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"test-payment-system/internal/pkg/config"
@@ -26,6 +27,8 @@ type ResourcesGetter interface {
 type PgDatabase struct {
 	Connection *sqlx.DB
 	Logger     *zap.SugaredLogger
+	config     config.DBConfig
+	resource   ResourcesGetter
 }
 
 func New(cfg *config.DBConfig, log *zap.SugaredLogger,
@@ -38,12 +41,14 @@ func New(cfg *config.DBConfig, log *zap.SugaredLogger,
 	db := &PgDatabase{
 		Logger:     log,
 		Connection: connection,
+		config:     *cfg,
+		resource:   resource,
 	}
 	if err := db.Healthcheck(context.TODO()); err != nil {
 		return nil, fmt.Errorf("failed to health check: %w", err)
 	}
 
-	if err := db.migrate(context.TODO(), cfg, resource); err != nil {
+	if err := db.MigrateUp(); err != nil {
 		return nil, fmt.Errorf("failed to migrate: %w", err)
 	}
 	log.Debug("DB connected.")
@@ -73,14 +78,13 @@ func (db *PgDatabase) Healthcheck(ctx context.Context) error {
 	return db.Connection.DB.PingContext(ctx)
 }
 
-func (db *PgDatabase) migrate(_ context.Context, cfg *config.DBConfig,
-	resoucesGetter ResourcesGetter) error {
+func (db *PgDatabase) MigrateUp() error {
 	// Prepare resources
-	dsn, err := getURIMigrate(cfg)
+	dsn, err := getURIMigrate(db.config)
 	if err != nil {
 		return err
 	}
-	names, assets := resoucesGetter.GetResources()
+	names, assets := db.resource.GetResources()
 	resources := bindata.Resource(names, assets)
 	driver, err := bindata.WithInstance(resources)
 	if err != nil {
@@ -111,8 +115,42 @@ func (db *PgDatabase) migrate(_ context.Context, cfg *config.DBConfig,
 	return nil
 }
 
+func (db *PgDatabase) MigrateDown() error {
+	// Prepare resources
+	dsn, err := getURIMigrate(db.config)
+	if err != nil {
+		return err
+	}
+	names, assets := db.resource.GetResources()
+	resources := bindata.Resource(names, assets)
+	driver, err := bindata.WithInstance(resources)
+	if err != nil {
+		return err
+	}
+
+	migrateInstance, err := migrate.NewWithSourceInstance("go-bindata", driver, dsn)
+	if err != nil {
+		return err
+	}
+	defer migrateInstance.Close()
+
+	version, dirty, err := migrateInstance.Version()
+	if err != nil {
+		return err
+	}
+	if dirty {
+		return errors.New("database dirty")
+	}
+	db.Logger.Debugw("migrate down", "current_version", version)
+	err = migrateInstance.Down()
+	if err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+	return nil
+}
+
 // getURIMigrate corrects the uri for the migration register and returns it
-func getURIMigrate(cfg *config.DBConfig) (string, error) {
+func getURIMigrate(cfg config.DBConfig) (string, error) {
 	result := cfg.URIMigrate
 	if result == "" {
 		result = cfg.URI

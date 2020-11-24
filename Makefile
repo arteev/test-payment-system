@@ -35,9 +35,14 @@ generate:
 	go generate ./...
 
 .PHONE: test
-test:
+test: test-unit test-integration
+
+test-unit:
 	go test -v `go list ./... | grep -v /internal/tests)`
+
+test-integration:
 	go test -v -tags=integration test-payment-system/tests
+
 lint:
 	# golangci-lint - https://github.com/golangci/golangci-lint
 	#
