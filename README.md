@@ -10,11 +10,20 @@ docker network create payment_system_network
 make build run
 ```
 
+## Test (unit, integration)
+
+```shell script
+    docker network create payment_system_network
+    # let's run the dependencies. do not start the service
+    make run-local
+    make test
+```
+
 ## Stop
 
 ```shell script
-make stop
-docker network rm payment_system_network
+    make stop
+    docker network rm payment_system_network
 ```
 
 ## Example requests

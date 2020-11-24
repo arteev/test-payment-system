@@ -8,4 +8,4 @@
 
 ## Services
 
-* Postgesql
+* Postgresql
