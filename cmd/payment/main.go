@@ -6,6 +6,7 @@ import (
 	"go.uber.org/zap"
 	"log"
 	"test-payment-system/internal/app/payment/api"
+	"test-payment-system/internal/app/payment/cachedb"
 	"test-payment-system/internal/app/payment/config"
 	"test-payment-system/internal/app/payment/database"
 	intConfig "test-payment-system/internal/pkg/config"
@@ -39,7 +40,11 @@ func buildContainer(configFile string) *dig.Container {
 		return api.New(log, db)
 	})
 	container.Provide(func(cfg *config.Config, log *zap.SugaredLogger) (database.Database, error) {
-		return database.New(cfg.DB, log)
+		db, err := database.New(cfg.DB, log)
+		if err != nil {
+			return nil, err
+		}
+		return cachedb.New(db), nil
 	})
 
 	return container

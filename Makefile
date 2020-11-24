@@ -63,6 +63,7 @@ cover-clean:
 
 tools:
 	GO111MODULE=off go get -u github.com/swaggo/swag/cmd/swag
+	GO111MODULE=on go get github.com/golang/mock/mockgen@v1.4.4
 
 swagger:
 	 swag init
