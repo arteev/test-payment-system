@@ -34,8 +34,10 @@ stop-soft:
 generate:
 	go generate ./...
 
+.PHONE: test
 test:
-	go test -v ./...
+	go test -v `go list ./... | grep -v /internal/tests)`
+	go test -v -tag integration ./...
 
 lint:
 	# golangci-lint - https://github.com/golangci/golangci-lint
