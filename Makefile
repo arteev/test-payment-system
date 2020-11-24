@@ -38,7 +38,7 @@ generate:
 test: test-unit test-integration
 
 test-unit:
-	go test -v `go list ./... | grep -v /internal/tests)`
+	go test -v `go list ./... | grep -v /internal/tests`
 
 test-integration:
 	go test -v -tags=integration test-payment-system/tests
