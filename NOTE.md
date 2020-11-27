@@ -23,7 +23,7 @@
 
 С помощью go-swag сгенерирован сваггер файл, который находится в [docs](./docs/swagger.json)
 
-[Примеры вызов API](README.md#Example requests) 
+[Примеры вызов API](README.md) 
 
 ### Запуск приложения
 
