@@ -108,7 +108,7 @@ func (a *API) Deposit(ctx context.Context, in service.DataObject) (response inte
 // @Produce json
 // @Param Payload body dto.TransferRequest true "Request Payload"
 // @Success 200 {object} service.Response{data=dto.TransferResponse} "Success operation"
-// @Router /api/v1/payment/deposit [post]
+// @Router /api/v1/payment/transfer [post]
 //
 func (a *API) Transfer(ctx context.Context, in service.DataObject) (response interface{}, responseErr error) {
 	request := in.(*dto.TransferRequest)
